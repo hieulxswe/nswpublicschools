@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { School } from '@/types/school';
 import Loading from '@/components/Loading';
+import SchoolStatsChart from '@/components/SchoolStatsChart';
 import { calculateDistance } from '@/utils/distance';
 
 interface SchoolDetailsPageProps {
@@ -627,6 +628,11 @@ export default function SchoolDetailsPage({ params }: SchoolDetailsPageProps) {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* School Statistics Chart */}
+        <div className="mb-8">
+          <SchoolStatsChart school={school} />
         </div>
 
         {/* Accordion Sections */}
