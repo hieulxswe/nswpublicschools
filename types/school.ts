@@ -52,3 +52,26 @@ export interface SchoolData {
   data: School[];
   total: number;
 }
+
+// Types for school comparison
+export interface ComparisonCriteria {
+  key: keyof School;
+  label: string;
+  format?: (value: any) => string;
+  numeric?: boolean;
+}
+
+export interface SchoolComparisonData {
+  school: School;
+  criteria: {
+    [key: string]: any;
+  };
+}
+
+export interface ComparisonViewMode {
+  type: 'table' | 'chart';
+}
+
+export interface SelectedSchools {
+  [schoolCode: string]: School;
+}

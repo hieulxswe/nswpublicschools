@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { School } from '@/types/school';
+import { School, SelectedSchools } from '@/types/school';
 import { calculateDistance } from '@/utils/distance';
 import { generateSlug, generateUniqueSlugs } from '@/utils/slug';
 
@@ -10,9 +10,22 @@ interface SchoolTableProps {
   currentPage: number;
   itemsPerPage: number;
   userLocation?: { lat: number; lon: number };
+  selectedSchools?: SelectedSchools;
+  onSchoolSelect?: (school: School) => void;
+  onSchoolDeselect?: (schoolCode: string) => void;
+  showComparison?: boolean;
 }
 
-export default function SchoolTable({ schools, currentPage, itemsPerPage, userLocation }: SchoolTableProps) {
+export default function SchoolTable({ 
+  schools, 
+  currentPage, 
+  itemsPerPage, 
+  userLocation, 
+  selectedSchools = {}, 
+  onSchoolSelect, 
+  onSchoolDeselect,
+  showComparison = false 
+}: SchoolTableProps) {
   const router = useRouter();
   const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -94,12 +107,37 @@ export default function SchoolTable({ schools, currentPage, itemsPerPage, userLo
     return distance !== null && distance <= 5; // Within 5km
   };
 
+  const isSchoolSelected = (school: School) => {
+    return selectedSchools[school.School_code] !== undefined;
+  };
+
+  const handleSchoolSelection = (school: School, event: React.MouseEvent) => {
+    if (!showComparison || !onSchoolSelect || !onSchoolDeselect) return;
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    if (isSchoolSelected(school)) {
+      onSchoolDeselect(school.School_code);
+    } else {
+      // Only allow up to 3 schools to be selected
+      if (Object.keys(selectedSchools).length < 3) {
+        onSchoolSelect(school);
+      }
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full">
           <thead className="bg-brand-primary">
             <tr>
+              {showComparison && (
+                <th className="px-6 py-4 text-center text-xs font-semibold text-white uppercase tracking-wider w-12">
+                  Select
+                </th>
+              )}
               <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
                 School Name
               </th>
@@ -134,8 +172,41 @@ export default function SchoolTable({ schools, currentPage, itemsPerPage, userLo
                 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'} 
                 hover:bg-gray-100 transition-colors duration-200 
                 ${isNearest ? 'bg-brand-secondary/10 border-l-4 border-brand-secondary shadow-sm' : ''}
+                ${isSchoolSelected(school) ? 'bg-brand-primary/5 border-l-4 border-brand-primary' : ''}
               `}
             >
+              {showComparison && (
+                <td className="px-6 py-5 text-center">
+                  <button
+                    onClick={(e) => handleSchoolSelection(school, e)}
+                    className={`
+                      w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200
+                      ${isSchoolSelected(school) 
+                        ? 'bg-brand-primary border-brand-primary text-white' 
+                        : 'border-gray-300 hover:border-brand-primary hover:bg-gray-50'
+                      }
+                      ${Object.keys(selectedSchools).length >= 3 && !isSchoolSelected(school) 
+                        ? 'opacity-50 cursor-not-allowed' 
+                        : 'cursor-pointer'
+                      }
+                    `}
+                    disabled={Object.keys(selectedSchools).length >= 3 && !isSchoolSelected(school)}
+                    title={
+                      isSchoolSelected(school) 
+                        ? 'Remove from comparison' 
+                        : Object.keys(selectedSchools).length >= 3 
+                          ? 'Maximum 3 schools can be compared' 
+                          : 'Add to comparison'
+                    }
+                  >
+                    {isSchoolSelected(school) && (
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                </td>
+              )}
               <td className="px-6 py-5">
                 <div className="text-sm font-semibold text-gray-900">
                   <div className="flex flex-col space-y-1">

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { School } from '@/types/school';
+import { School, SelectedSchools } from '@/types/school';
 import SearchBar from '@/components/SearchBar';
 import SchoolTable from '@/components/SchoolTable';
+import SchoolComparison from '@/components/SchoolComparison';
 import Pagination from '@/components/Pagination';
 import Loading from '@/components/Loading';
 import Filter from '@/components/Filter';
@@ -23,6 +24,9 @@ export default function Home() {
   const [radius, setRadius] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const [selectedSchools, setSelectedSchools] = useState<SelectedSchools>({});
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonMode, setComparisonMode] = useState(false);
 
   useEffect(() => {
     const fetchSchools = async () => {
@@ -167,6 +171,44 @@ export default function Home() {
     setCurrentPage(1);
   };
 
+  const handleSchoolSelect = (school: School) => {
+    setSelectedSchools(prev => ({
+      ...prev,
+      [school.School_code]: school
+    }));
+  };
+
+  const handleSchoolDeselect = (schoolCode: string) => {
+    setSelectedSchools(prev => {
+      const newSelection = { ...prev };
+      delete newSelection[schoolCode];
+      return newSelection;
+    });
+  };
+
+  const handleCompareSchools = () => {
+    if (Object.keys(selectedSchools).length >= 2) {
+      setShowComparison(true);
+    }
+  };
+
+  const handleCloseComparison = () => {
+    setShowComparison(false);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedSchools({});
+  };
+
+  const handleToggleComparisonMode = () => {
+    setComparisonMode(!comparisonMode);
+    if (comparisonMode) {
+      setSelectedSchools({});
+    }
+  };
+
+  const selectedCount = Object.keys(selectedSchools).length;
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -221,6 +263,54 @@ export default function Home() {
               </div>
             </div>
             
+            {/* Comparison Tool Toggle */}
+            <div className="mb-4 lg:mb-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={handleToggleComparisonMode}
+                    className={`
+                      flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
+                      ${comparisonMode 
+                        ? 'bg-brand-primary text-white shadow-lg' 
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>School Comparison Tool</span>
+                  </button>
+                  
+                  {comparisonMode && selectedCount > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-600">
+                        {selectedCount} of 3 schools selected
+                      </span>
+                      {selectedCount >= 2 && (
+                        <button
+                          onClick={handleCompareSchools}
+                          className="bg-brand-secondary text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-secondary/90 transition-colors"
+                        >
+                          Compare Schools
+                        </button>
+                      )}
+                      <button
+                        onClick={handleClearSelection}
+                        className="text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
+                        title="Clear selection"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Filters Section */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-4 lg:mb-6">
               {/* Search and Filter Panel */}
@@ -259,6 +349,10 @@ export default function Home() {
                 currentPage={currentPage}
                 itemsPerPage={itemsPerPage}
                 userLocation={userLocation || undefined}
+                selectedSchools={selectedSchools}
+                onSchoolSelect={handleSchoolSelect}
+                onSchoolDeselect={handleSchoolDeselect}
+                showComparison={comparisonMode}
               />
             </div>
           </div>
@@ -270,6 +364,15 @@ export default function Home() {
           />
         </div>
       </div>
+
+      {/* School Comparison Modal */}
+      {showComparison && (
+        <SchoolComparison
+          selectedSchools={selectedSchools}
+          onClose={handleCloseComparison}
+          onClearSelection={handleClearSelection}
+        />
+      )}
     </div>
   );
 }

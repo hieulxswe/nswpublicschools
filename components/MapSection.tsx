@@ -86,16 +86,30 @@ const MapSection: React.FC<MapSectionProps> = ({
     const init = async () => {
       await ensureLeafletLoaded();
       const L = (window as any).L;
-      if (!L) return;
+      if (!L) {
+        console.error('Leaflet failed to load');
+        return;
+      }
+
+      // Ensure map container exists
+      if (!mapContainerRef.current) {
+        console.error('Map container not found');
+        return;
+      }
 
       // Avoid re-initialization
       let map = mapInstanceRef.current;
       if (!map) {
-        map = L.map(mapContainerRef.current, {
-          zoomControl: true,
-          scrollWheelZoom: true,
-        });
-        mapInstanceRef.current = map;
+        try {
+          map = L.map(mapContainerRef.current, {
+            zoomControl: true,
+            scrollWheelZoom: true,
+          });
+          mapInstanceRef.current = map;
+        } catch (error) {
+          console.error('Failed to initialize map:', error);
+          return;
+        }
       }
 
       if (!tileLayerAddedRef.current) {
@@ -197,6 +211,8 @@ const MapSection: React.FC<MapSectionProps> = ({
       }
 
       const updateDistanceLine = (userLat: number, userLng: number) => {
+        if (!map) return; // Guard clause to ensure map exists
+        
         const points = [[userLat, userLng], [lat, lng]];
         const calculatedDistance = calculateDistance(userLat, userLng, lat, lng);
         setDistance(calculatedDistance);
@@ -245,6 +261,8 @@ const MapSection: React.FC<MapSectionProps> = ({
       };
 
       const setUserLocation = (userLat: number, userLng: number) => {
+        if (!map) return; // Guard clause to ensure map exists
+        
         setUserLocationState({ lat: userLat, lng: userLng });
         
         if (!userMarkerRef.current) {
@@ -317,7 +335,7 @@ const MapSection: React.FC<MapSectionProps> = ({
 
       // Helper: load suburb polygon from Nominatim (OpenStreetMap)
       const loadSuburbPolygon = async () => {
-        if (!suburb) return;
+        if (!suburb || !map) return;
         try {
           const parts = suburb.split(' ').filter(Boolean);
           let postcode = '';
