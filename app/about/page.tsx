@@ -111,17 +111,7 @@ export default function AboutPage() {
                   <li>• Administrative information</li>
                 </ul>
               </div>
-              <a
-                href="https://data.nsw.gov.au/data/dataset/78c10ea3-8d04-4c9c-b255-bbf8547e37e7"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-brand-primary hover:brand-secondary transition-colors duration-200"
-              >
-                View Official Dataset
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
+             
             </div>
           </div>
         </div>

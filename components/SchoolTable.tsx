@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { School } from '@/types/school';
 import { calculateDistance } from '@/utils/distance';
+import { generateSlug, generateUniqueSlugs } from '@/utils/slug';
 
 interface SchoolTableProps {
   schools: School[];
@@ -12,12 +14,58 @@ interface SchoolTableProps {
 
 export default function SchoolTable({ schools, currentPage, itemsPerPage, userLocation }: SchoolTableProps) {
   const router = useRouter();
+  const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentSchools = schools.slice(startIndex, endIndex);
+  
+  // Generate unique slugs for all schools to handle conflicts
+  const slugMap = generateUniqueSlugs(schools);
 
   const handleSchoolClick = (school: School) => {
-    router.push(`/school/${school.School_code}`);
+    // Find the unique slug for this school
+    const schoolSlug = Array.from(slugMap.entries()).find(([_, s]) => s.School_code === school.School_code)?.[0];
+    if (schoolSlug) {
+      router.push(`/schools/${schoolSlug}`);
+    } else {
+      // Fallback to basic slug generation
+      const fallbackSlug = generateSlug(school.School_name, school.School_code);
+      router.push(`/schools/${fallbackSlug}`);
+    }
+  };
+
+  const handleCopyLink = async (school: School, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    // Find the unique slug for this school
+    const schoolSlug = Array.from(slugMap.entries()).find(([_, s]) => s.School_code === school.School_code)?.[0];
+    const finalSlug = schoolSlug || generateSlug(school.School_name, school.School_code);
+    const schoolUrl = `${window.location.origin}/schools/${finalSlug}`;
+    
+    try {
+      await navigator.clipboard.writeText(schoolUrl);
+      setCopiedStates(prev => ({ ...prev, [school.School_code]: true }));
+      
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [school.School_code]: false }));
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = schoolUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      setCopiedStates(prev => ({ ...prev, [school.School_code]: true }));
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [school.School_code]: false }));
+      }, 2000);
+    }
   };
 
   const formatPhoneNumber = (phone: string) => {
@@ -90,25 +138,53 @@ export default function SchoolTable({ schools, currentPage, itemsPerPage, userLo
             >
               <td className="px-6 py-5">
                 <div className="text-sm font-semibold text-gray-900">
-                  <button
-                    onClick={() => handleSchoolClick(school)}
-                    className="brand-primary hover:brand-secondary underline hover:no-underline transition-all duration-200 font-medium text-left"
-                  >
-                    {school.School_name || 'N/A'}
-                  </button>
-                  {school.Website && (
-                    <div className="mt-1">
-                      <a
-                        href={formatWebsite(school.Website)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-gray-500 hover:text-gray-700 underline"
-                        onClick={(e) => e.stopPropagation()}
+                  <div className="flex flex-col space-y-1">
+                    <button
+                      onClick={() => handleSchoolClick(school)}
+                      className="brand-primary hover:brand-secondary underline hover:no-underline transition-all duration-200 font-medium text-left"
+                    >
+                      {school.School_name || 'N/A'}
+                    </button>
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <button
+                        onClick={(e) => handleCopyLink(school, e)}
+                        className={`flex items-center space-x-1 transition-all duration-200 px-2 py-1 rounded-md hover:bg-gray-100 ${
+                          copiedStates[school.School_code] 
+                            ? 'text-green-600 bg-green-50' 
+                            : 'text-[#002664] hover:text-[#d7153a]'
+                        }`}
+                        title="Copy shareable link to clipboard"
+                        aria-label="Copy shareable link to clipboard"
                       >
-                        Visit Website
-                      </a>
+                        {copiedStates[school.School_code] ? (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="hidden sm:inline">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            <span className="hidden sm:inline">Shareable Link</span>
+                          </>
+                        )}
+                      </button>
+                      {school.Website && (
+                        <a
+                          href={formatWebsite(school.Website)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-gray-500 hover:text-gray-700 underline px-2 py-1 rounded-md hover:bg-gray-100 transition-colors duration-200"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Visit Website
+                        </a>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </td>
               <td className="px-6 py-5">
