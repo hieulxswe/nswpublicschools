@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getLastUpdatedDate } from '@/utils/lastUpdated';
+import InfoBar from './InfoBar';
 
 export default function Header() {
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -132,21 +133,8 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Info Bar - Scrolls with content */}
-      <div className="bg-[rgb(175_18_48_/_var(--tw-text-opacity,1))] text-white py-1">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <p className="text-sm mb-1">
-              This project is non-profit, does not collect data, and sources all information from the NSW Department of Education's official dataset.
-            </p>
-            {lastUpdated && (
-              <p className="text-xs text-blue-100">
-                Last updated: {lastUpdated}
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* Info Bar */}
+      <InfoBar />
     </>
   );
 }
