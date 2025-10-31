@@ -1,24 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { getLastUpdatedDate } from '@/utils/lastUpdated';
-import InfoBar from './InfoBar';
 
 export default function Header() {
-  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const fetchLastUpdate = async () => {
-      const date = await getLastUpdatedDate();
-      setLastUpdated(date);
-    };
-
-    fetchLastUpdate();
-  }, []);
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -132,9 +120,6 @@ export default function Header() {
           )}
         </div>
       </header>
-
-      {/* Info Bar */}
-      <InfoBar />
     </>
   );
 }

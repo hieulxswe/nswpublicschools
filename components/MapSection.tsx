@@ -211,7 +211,8 @@ const MapSection: React.FC<MapSectionProps> = ({
       }
 
       const updateDistanceLine = (userLat: number, userLng: number) => {
-        if (!map) return; // Guard clause to ensure map exists
+        const currentMap = mapInstanceRef.current;
+        if (!currentMap) return; // Guard clause to ensure map exists
         
         const points = [[userLat, userLng], [lat, lng]];
         const calculatedDistance = calculateDistance(userLat, userLng, lat, lng);
@@ -225,14 +226,14 @@ const MapSection: React.FC<MapSectionProps> = ({
             opacity: 0.9,
             dashArray: '8, 4',
             zIndexOffset: 900
-          }).addTo(map);
+          }).addTo(currentMap);
         } else {
           lineRef.current.setLatLngs(points);
         }
 
         // Remove any existing distance label
         if (distanceLabelRef.current) {
-          map.removeLayer(distanceLabelRef.current);
+          currentMap.removeLayer(distanceLabelRef.current);
           distanceLabelRef.current = null;
         }
 
@@ -247,7 +248,7 @@ const MapSection: React.FC<MapSectionProps> = ({
         distanceLabelRef.current = L.marker([midLat, midLng], { 
           icon: L.divIcon({ className: '', html: distanceLabelHtml }), 
           interactive: false 
-        }).addTo(map);
+        }).addTo(currentMap);
 
         // Fit bounds to include user, school, and suburb polygon when available
         const layersToFit: any[] = [];
@@ -257,11 +258,12 @@ const MapSection: React.FC<MapSectionProps> = ({
         }
         const group = L.featureGroup(layersToFit as any);
         const finalBounds = group.getBounds();
-        map.fitBounds(finalBounds, { padding: [80, 80] });
+        currentMap.fitBounds(finalBounds, { padding: [80, 80] });
       };
 
       const setUserLocation = (userLat: number, userLng: number) => {
-        if (!map) return; // Guard clause to ensure map exists
+        const currentMap = mapInstanceRef.current;
+        if (!currentMap) return; // Guard clause to ensure map exists
         
         setUserLocationState({ lat: userLat, lng: userLng });
         
@@ -302,7 +304,7 @@ const MapSection: React.FC<MapSectionProps> = ({
           userMarkerRef.current = L.marker([userLat, userLng], { 
             icon: userIcon,
             zIndexOffset: 1100
-          }).addTo(map);
+          }).addTo(currentMap);
           userMarkerRef.current.bindPopup('<div style="font-weight:600;color:#002664;font-size:14px">Your Location</div>');
         } else {
           userMarkerRef.current.setLatLng([userLat, userLng]);

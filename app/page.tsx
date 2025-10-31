@@ -27,6 +27,7 @@ export default function Home() {
   const [selectedSchools, setSelectedSchools] = useState<SelectedSchools>({});
   const [showComparison, setShowComparison] = useState(false);
   const [comparisonMode, setComparisonMode] = useState(false);
+  const [showInstructionModal, setShowInstructionModal] = useState(false);
 
   useEffect(() => {
     const fetchSchools = async () => {
@@ -201,10 +202,19 @@ export default function Home() {
   };
 
   const handleToggleComparisonMode = () => {
-    setComparisonMode(!comparisonMode);
-    if (comparisonMode) {
+    if (!comparisonMode) {
+      // First time opening - show instructions
+      setShowInstructionModal(true);
+    } else {
+      // Closing mode - clear selection
+      setComparisonMode(false);
       setSelectedSchools({});
     }
+  };
+
+  const handleStartComparison = () => {
+    setShowInstructionModal(false);
+    setComparisonMode(true);
   };
 
   const selectedCount = Object.keys(selectedSchools).length;
@@ -263,50 +273,92 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Comparison Tool Toggle */}
-            <div className="mb-4 lg:mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={handleToggleComparisonMode}
-                    className={`
-                      flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200
-                      ${comparisonMode 
-                        ? 'bg-brand-primary text-white shadow-lg' 
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                      }
-                    `}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <span>School Comparison Tool</span>
-                  </button>
-                  
-                  {comparisonMode && selectedCount > 0 && (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-600">
-                        {selectedCount} of 3 schools selected
-                      </span>
-                      {selectedCount >= 2 && (
-                        <button
-                          onClick={handleCompareSchools}
-                          className="bg-brand-secondary text-white px-4 py-2 rounded-lg font-medium hover:bg-brand-secondary/90 transition-colors"
-                        >
-                          Compare Schools
-                        </button>
-                      )}
+            {/* School Comparison Tool Card */}
+            <div className="mb-6 lg:mb-8">
+              <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 border-2 border-[#002664]/10 overflow-hidden">
+                <div className="p-6 lg:p-8">
+                  {/* Header Section */}
+                  <div className="flex items-start gap-5 mb-6">
+                    {/* Enhanced Icon */}
+                    <div className="flex-shrink-0">
+                      <div className="w-16 h-16 bg-[#002664] rounded-xl flex items-center justify-center shadow-lg">
+                        <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    {/* Title and Description */}
+                    <div className="flex-1">
+                      <h2 className="text-2xl font-bold text-[#002664] flex items-center gap-2 mb-2">
+                        School Comparison Tool
+                      </h2>
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        Compare NSW public schools by academic performance, demographics, and location to find the best fit for your family.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Call to Action Section */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-gray-200">
+                    {!comparisonMode ? (
                       <button
-                        onClick={handleClearSelection}
-                        className="text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-                        title="Clear selection"
+                        onClick={handleToggleComparisonMode}
+                        className="bg-[#002664] hover:bg-[#001a4d] text-white px-7 py-3.5 rounded-lg font-semibold shadow-sm hover:shadow-md transition-all duration-200 flex items-center space-x-2 group"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <span>Compare Schools</span>
+                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+                        {selectedCount > 0 && (
+                          <div className="flex items-center space-x-3 bg-[#002664]/5 border border-[#002664]/20 px-4 py-2 rounded-lg">
+                            <svg className="w-5 h-5 text-[#002664]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-sm font-semibold text-[#002664]">
+                              {selectedCount} of 3 schools selected
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center space-x-3 ml-auto">
+                          {selectedCount >= 2 && (
+                            <button
+                              onClick={handleCompareSchools}
+                              className="bg-brand-secondary hover:bg-[#b3122e] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition-all duration-200 flex items-center space-x-2"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                              </svg>
+                              <span>Compare Schools</span>
+                            </button>
+                          )}
+                          {selectedCount > 0 && (
+                            <button
+                              onClick={handleClearSelection}
+                              className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+                              title="Clear selection"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          )}
+                          <button
+                            onClick={handleToggleComparisonMode}
+                            className="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200 text-sm font-medium"
+                          >
+                            Exit Comparison Mode
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -372,6 +424,98 @@ export default function Home() {
           onClose={handleCloseComparison}
           onClearSelection={handleClearSelection}
         />
+      )}
+
+      {/* Comparison Instructions Modal */}
+      {showInstructionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={() => setShowInstructionModal(false)}>
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="bg-[#002664] text-white px-6 py-5 rounded-t-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold">Getting Started</h3>
+                </div>
+                <button
+                  onClick={() => setShowInstructionModal(false)}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              <p className="text-gray-700 text-lg mb-6 leading-relaxed">
+                Select up to 3 schools from the list below to compare side-by-side.
+              </p>
+
+              {/* Feature list */}
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-[#002664]/10 border border-[#002664]/20 rounded-full flex items-center justify-center mt-0.5">
+                    <svg className="w-4 h-4 text-[#002664]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Compare Performance</h4>
+                    <p className="text-sm text-gray-600">View academic results, ICSEA values, and enrollment data</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-[#002664]/10 border border-[#002664]/20 rounded-full flex items-center justify-center mt-0.5">
+                    <svg className="w-4 h-4 text-[#002664]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Analyze Demographics</h4>
+                    <p className="text-sm text-gray-600">Compare student demographics and diversity metrics</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-[#002664]/10 border border-[#002664]/20 rounded-full flex items-center justify-center mt-0.5">
+                    <svg className="w-4 h-4 text-[#002664]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">Visual Charts</h4>
+                    <p className="text-sm text-gray-600">View interactive radar and bar charts for easy comparison</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end space-x-3">
+              <button
+                onClick={() => setShowInstructionModal(false)}
+                className="px-4 py-2 text-gray-700 hover:text-gray-900 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStartComparison}
+                className="bg-[#002664] hover:bg-[#001a4d] text-white px-6 py-2 rounded-lg font-semibold shadow-sm hover:shadow-md transition-all duration-200 flex items-center space-x-2"
+              >
+                <span>Get Started</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

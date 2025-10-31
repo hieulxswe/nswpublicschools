@@ -130,8 +130,13 @@ export default function SchoolComparison({ selectedSchools, onClose, onClearSele
         {/* Header */}
         <div className="bg-brand-primary text-white px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold">School Comparison Tool</h2>
-            <p className="text-sm opacity-90">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold">School Comparison Tool</h2>
+            </div>
+            <p className="text-xs text-blue-100 mt-1">
+              Compare NSW schools by performance, demographics, and location to find the best fit for your needs
+            </p>
+            <p className="text-sm opacity-90 mt-2">
               Comparing {selectedSchoolsArray.length} school{selectedSchoolsArray.length > 1 ? 's' : ''}
             </p>
           </div>
